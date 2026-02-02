@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lyra Hocuspocus 管理控制台</title>
+    <style>
+      :root {
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --bg-card: #334155;
+        --text-primary: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --border: #475569;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 30px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .auth-section {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      input[type="password"] {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        font-size: 14px;
+      }
+
+      button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        background: var(--accent);
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: var(--accent-hover);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      button.danger {
+        background: var(--danger);
+      }
+
+      button.danger:hover {
+        background: #dc2626;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--border);
+      }
+
+      .stat-card h3 {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .stat-card .value {
+        font-size: 2rem;
+        font-weight: 700;
+      }
+
+      .stat-card .sub {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 4px;
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 8px;
+      }
+
+      .status-indicator.connected {
+        background: var(--success);
+      }
+
+      .status-indicator.disconnected {
+        background: var(--danger);
+      }
+
+      .status-indicator.disabled {
+        background: var(--text-secondary);
+      }
+
+      .section {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--border);
+        margin-bottom: 20px;
+      }
+
+      .section h2 {
+        font-size: 1.125rem;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+
+      th {
+        color: var(--text-secondary);
+        font-weight: 500;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      tr:hover {
+        background: var(--bg-card);
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .badge.active {
+        background: rgba(34, 197, 94, 0.2);
+        color: var(--success);
+      }
+
+      .badge.inactive {
+        background: rgba(148, 163, 184, 0.2);
+        color: var(--text-secondary);
+      }
+
+      .error-message {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-secondary);
+      }
+
+      .refresh-btn {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        padding: 6px 12px;
+        font-size: 0.875rem;
+      }
+
+      .refresh-btn:hover {
+        background: var(--bg-card);
+        color: var(--text-primary);
+      }
+
+      .auto-refresh {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+      }
+
+      .auto-refresh input {
+        accent-color: var(--accent);
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .login-container {
+        max-width: 400px;
+        margin: 100px auto;
+        text-align: center;
+      }
+
+      .login-container h1 {
+        margin-bottom: 30px;
+      }
+
+      .login-form {
+        background: var(--bg-secondary);
+        padding: 30px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+      }
+
+      .login-form input {
+        width: 100%;
+        margin-bottom: 16px;
+      }
+
+      .login-form button {
+        width: 100%;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 400px;
+        width: 90%;
+        border: 1px solid var(--border);
+      }
+
+      .modal h3 {
+        margin-bottom: 16px;
+      }
+
+      .modal p {
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+      }
+
+      .modal-actions button {
+        min-width: 80px;
+      }
+
+      .cancel-btn {
+        background: var(--bg-card);
+      }
+
+      .cancel-btn:hover {
+        background: var(--border);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 登录页面 -->
+    <div id="login-page" class="login-container">
+      <h1>🔐 Lyra 管理控制台</h1>
+      <div class="login-form">
+        <input type="password" id="password-input" placeholder="输入管理密码" />
+        <button onclick="login()">登录</button>
+        <div id="login-error" class="error-message hidden"></div>
+      </div>
+    </div>
+
+    <!-- 主页面 -->
+    <div id="main-page" class="container hidden">
+      <header>
+        <h1>📊 Lyra Hocuspocus 管理控制台</h1>
+        <div class="auth-section">
+          <label class="auto-refresh">
+            <input type="checkbox" id="auto-refresh" checked />
+            自动刷新 (10s)
+          </label>
+          <button class="refresh-btn" onclick="refreshAll()">🔄 刷新</button>
+          <button onclick="logout()">退出</button>
+        </div>
+      </header>
+
+      <div id="error-container"></div>
+
+      <!-- 统计卡片 -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>活跃连接</h3>
+          <div class="value" id="stat-connections">-</div>
+          <div class="sub" id="stat-ips">- 个唯一 IP</div>
+        </div>
+        <div class="stat-card">
+          <h3>活跃房间</h3>
+          <div class="value" id="stat-rooms">-</div>
+          <div class="sub" id="stat-total-rooms">共 - 个房间</div>
+        </div>
+        <div class="stat-card">
+          <h3>运行时间</h3>
+          <div class="value" id="stat-uptime">-</div>
+          <div class="sub" id="stat-memory">内存: -</div>
+        </div>
+        <div class="stat-card">
+          <h3>Redis 状态</h3>
+          <div class="value">
+            <span class="status-indicator" id="redis-indicator"></span>
+            <span id="stat-redis">-</span>
+          </div>
+          <div class="sub">数据缓存</div>
+        </div>
+      </div>
+
+      <!-- 房间列表 -->
+      <div class="section">
+        <h2>
+          🏠 房间列表
+          <span
+            id="rooms-count"
+            style="
+              font-weight: normal;
+              font-size: 0.875rem;
+              color: var(--text-secondary);
+            "
+          ></span>
+        </h2>
+        <div id="rooms-loading" class="loading">加载中...</div>
+        <table id="rooms-table" class="hidden">
+          <thead>
+            <tr>
+              <th>房间 ID</th>
+              <th>房主</th>
+              <th>成员数</th>
+              <th>活跃连接</th>
+              <th>创建时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="rooms-tbody"></tbody>
+        </table>
+        <div id="rooms-empty" class="loading hidden">暂无房间</div>
+      </div>
+    </div>
+
+    <!-- 关闭房间确认弹窗 -->
+    <div id="close-modal" class="modal-overlay hidden">
+      <div class="modal">
+        <h3>⚠️ 确认关闭房间</h3>
+        <p>
+          确定要关闭房间
+          <strong id="close-room-id"></strong>
+          吗？这将断开所有连接并删除房间数据。
+        </p>
+        <div class="modal-actions">
+          <button class="cancel-btn" onclick="hideCloseModal()">取消</button>
+          <button class="danger" onclick="confirmCloseRoom()">确认关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 状态
+      let token = localStorage.getItem("adminToken") || "";
+      let autoRefreshInterval = null;
+      let roomToClose = null;
+
+      // 初始化
+      document.addEventListener("DOMContentLoaded", () => {
+        if (token) {
+          showMainPage();
+          refreshAll();
+          startAutoRefresh();
+        }
+
+        // 回车登录
+        document
+          .getElementById("password-input")
+          .addEventListener("keypress", (e) => {
+            if (e.key === "Enter") login();
+          });
+
+        // 自动刷新开关
+        document
+          .getElementById("auto-refresh")
+          .addEventListener("change", (e) => {
+            if (e.target.checked) {
+              startAutoRefresh();
+            } else {
+              stopAutoRefresh();
+            }
+          });
+      });
+
+      // API 请求
+      async function apiRequest(endpoint, options = {}) {
+        const response = await fetch(`/admin/api${endpoint}`, {
+          ...options,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            ...options.headers,
+          },
+        });
+
+        if (response.status === 401) {
+          logout();
+          throw new Error("认证失败，请重新登录");
+        }
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error || `请求失败: ${response.status}`);
+        }
+
+        return response.json();
+      }
+
+      // 登录
+      async function login() {
+        const password = document.getElementById("password-input").value;
+        if (!password) {
+          showLoginError("请输入密码");
+          return;
+        }
+
+        token = password;
+        localStorage.setItem("adminToken", token);
+
+        try {
+          await apiRequest("/metrics");
+          showMainPage();
+          refreshAll();
+          startAutoRefresh();
+        } catch (e) {
+          showLoginError(e.message);
+          token = "";
+          localStorage.removeItem("adminToken");
+        }
+      }
+
+      // 登出
+      function logout() {
+        token = "";
+        localStorage.removeItem("adminToken");
+        stopAutoRefresh();
+        document.getElementById("login-page").classList.remove("hidden");
+        document.getElementById("main-page").classList.add("hidden");
+        document.getElementById("password-input").value = "";
+      }
+
+      // 显示主页面
+      function showMainPage() {
+        document.getElementById("login-page").classList.add("hidden");
+        document.getElementById("main-page").classList.remove("hidden");
+      }
+
+      // 显示登录错误
+      function showLoginError(message) {
+        const el = document.getElementById("login-error");
+        el.textContent = message;
+        el.classList.remove("hidden");
+      }
+
+      // 显示错误
+      function showError(message) {
+        const container = document.getElementById("error-container");
+        container.innerHTML = `<div class="error-message">${message}</div>`;
+        setTimeout(() => (container.innerHTML = ""), 5000);
+      }
+
+      // 刷新所有数据
+      async function refreshAll() {
+        try {
+          await Promise.all([refreshMetrics(), refreshRooms()]);
+        } catch (e) {
+          showError(e.message);
+        }
+      }
+
+      // 刷新指标
+      async function refreshMetrics() {
+        const data = await apiRequest("/metrics");
+
+        document.getElementById("stat-connections").textContent =
+          data.connections.total;
+        document.getElementById(
+          "stat-ips"
+        ).textContent = `${data.rateLimiting.uniqueIps} 个唯一 IP`;
+        document.getElementById("stat-uptime").textContent =
+          data.resources.uptime;
+        document.getElementById(
+          "stat-memory"
+        ).textContent = `内存: ${data.resources.memoryUsage}`;
+
+        const redisStatus = data.redis.status;
+        document.getElementById("stat-redis").textContent =
+          redisStatus === "connected"
+            ? "已连接"
+            : redisStatus === "disabled"
+            ? "已禁用"
+            : "已断开";
+
+        const indicator = document.getElementById("redis-indicator");
+        indicator.className = `status-indicator ${redisStatus}`;
+      }
+
+      // 刷新房间列表
+      async function refreshRooms() {
+        const data = await apiRequest("/rooms?limit=50");
+
+        document.getElementById("stat-rooms").textContent = Object.keys(
+          data.rooms.filter((r) => r.activeConnections > 0)
+        ).length;
+        document.getElementById(
+          "stat-total-rooms"
+        ).textContent = `共 ${data.total} 个房间`;
+        document.getElementById(
+          "rooms-count"
+        ).textContent = `(${data.total} 个)`;
+
+        const tbody = document.getElementById("rooms-tbody");
+        const table = document.getElementById("rooms-table");
+        const loading = document.getElementById("rooms-loading");
+        const empty = document.getElementById("rooms-empty");
+
+        loading.classList.add("hidden");
+
+        if (data.rooms.length === 0) {
+          table.classList.add("hidden");
+          empty.classList.remove("hidden");
+          return;
+        }
+
+        empty.classList.add("hidden");
+        table.classList.remove("hidden");
+
+        tbody.innerHTML = data.rooms
+          .map(
+            (room) => `
+        <tr>
+          <td title="${room.roomId}">${room.roomId.substring(0, 12)}...</td>
+          <td>${room.hostUserId.substring(0, 12)}...</td>
+          <td>${room.members.length}</td>
+          <td>
+            <span class="badge ${
+              room.activeConnections > 0 ? "active" : "inactive"
+            }">
+              ${room.activeConnections}
+            </span>
+          </td>
+          <td>${formatTime(room.createdAt)}</td>
+          <td class="actions">
+            <button class="danger" onclick="showCloseModal('${
+              room.roomId
+            }')">关闭</button>
+          </td>
+        </tr>
+      `
+          )
+          .join("");
+      }
+
+      // 格式化时间
+      function formatTime(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+
+        if (diff < 60000) return "刚刚";
+        if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`;
+
+        return date.toLocaleDateString("zh-CN", {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      // 显示关闭房间弹窗
+      function showCloseModal(roomId) {
+        roomToClose = roomId;
+        document.getElementById("close-room-id").textContent =
+          roomId.substring(0, 20) + "...";
+        document.getElementById("close-modal").classList.remove("hidden");
+      }
+
+      // 隐藏关闭房间弹窗
+      function hideCloseModal() {
+        roomToClose = null;
+        document.getElementById("close-modal").classList.add("hidden");
+      }
+
+      // 确认关闭房间
+      async function confirmCloseRoom() {
+        if (!roomToClose) return;
+
+        try {
+          await apiRequest(`/rooms/${roomToClose}/close`, {
+            method: "POST",
+            body: JSON.stringify({ reason: "管理员操作" }),
+          });
+          hideCloseModal();
+          refreshAll();
+        } catch (e) {
+          showError(e.message);
+          hideCloseModal();
+        }
+      }
+
+      // 自动刷新
+      function startAutoRefresh() {
+        stopAutoRefresh();
+        autoRefreshInterval = setInterval(refreshAll, 10000);
+      }
+
+      function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+          clearInterval(autoRefreshInterval);
+          autoRefreshInterval = null;
+        }
+      }
+    </script>
+  </body>
+</html>

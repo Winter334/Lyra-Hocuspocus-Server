@@ -1,0 +1,30 @@
+{
+  "name": "lyra-hocuspocus-server",
+  "version": "1.0.0",
+  "description": "Hocuspocus WebSocket server for Lyra Next multiplayer",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc && npm run copy-static",
+    "copy-static": "node -e \"const fs=require('fs');const path=require('path');fs.cpSync('src/admin-ui','dist/admin-ui',{recursive:true})\"",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hocuspocus/server": "^2.15.0",
+    "express": "^4.21.2",
+    "ioredis": "^5.4.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.12.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
