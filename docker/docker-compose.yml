@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  hocuspocus:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: lyra-hocuspocus
+    ports:
+      - "3000:3000"   # HTTP API
+      - "1234:1234"   # WebSocket
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-please-change}
+      - WS_PORT=1234
+      - WS_HOST=0.0.0.0
+      - HTTP_PORT=3000
+      - REDIS_ENABLED=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - LOG_LEVEL=info
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - lyra-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: lyra-redis
+    # 不暴露端口到宿主机，仅 Docker 内部访问
+    # ports:
+    #   - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - lyra-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  lyra-network:
+    driver: bridge
